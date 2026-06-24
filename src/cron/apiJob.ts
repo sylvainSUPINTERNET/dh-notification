@@ -64,21 +64,30 @@ export class ApiJob implements OnModuleInit {
                         }
 
                         if ( arAndAudioData.ok && frData.ok ) {
-                            // TODO bug ici, car on peut avoir plusieurs verses ! on peut donc pas juste prendre le 0 ...
                             const {data:arAndAudio} = await arAndAudioData.json();
-                            const {audio:arAudio, text:arText} = arAndAudio.ayahs.filter((ayah:any) => verses.includes(ayah.numberInSurah))[0];
+                            const arAudioAndText: {audio: string, text: string, verseNumber: number}[] = arAndAudio.ayahs.filter((ayah:any) => verses.includes(ayah.numberInSurah)).map((ayah:any) => ({audio: ayah.audio, text: ayah.text, verseNumber: ayah.numberInSurah}));
+
                             const {data:fr} = await frData.json();
-                            let {text:frText}  = fr.ayahs.filter((ayah:any) => verses.includes(ayah.numberInSurah))[0];
+                            let frText: {text: string, verseNumber: number}[] = fr.ayahs.filter((ayah:any) => verses.includes(ayah.numberInSurah)).map((ayah:any) => ({text: ayah.text, verseNumber: ayah.numberInSurah}));
+                            
+                            let contents = arAudioAndText.map(arAudio => {
+                                const frTextForVerse = frText.find(fr => fr.verseNumber === arAudio.verseNumber);
+                                if ( frTextForVerse === undefined || frTextForVerse === null ) {
+                                    throw new Error(`Error while merging data from alquran API for surah ${surah} - verse ${arAudio.verseNumber} - fr text not found`);
+                                }
+                                return {
+                                    verseNumber: arAudio.verseNumber,
+                                    text_ar: arAudio.text,
+                                    text_fr: frTextForVerse.text,
+                                    audio: arAudio.audio
+                                }
+                            });
 
                             const mergedResult = {
                                 theme, 
                                 surah,
                                 verses,
-                                content: {
-                                    arText,
-                                    frText,
-                                    arAudio
-                                }
+                                contents
                             }
 
                             this.logger.log(`Merged result : ${JSON.stringify(mergedResult)}`);
