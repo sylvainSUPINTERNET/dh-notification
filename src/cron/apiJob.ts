@@ -22,14 +22,11 @@ export class ApiJob implements OnModuleInit {
             cronTime = process.env.DEV_CRON_SCHEDULE_NOTIFICATION!;
         }
 
-
-        // TODO : rework prompt 
-        // https://chatgpt.com/c/6a39d9bd-d2a8-83ed-868a-2e08e9b31e24
-        
-        // TODO : prompt 
         // TODO : save in DB the data ( to be view on the dashboard on phone )
         // TODO : get list of FCM tokens 
         // TODO : concurrency send X notifications with firebase SDK
+
+        // TODO : manage history ? to avoid same theme twice in a row ? or just randomize it and let it be random ?
 
         CronJob.from({
                 cronTime,
@@ -67,6 +64,7 @@ export class ApiJob implements OnModuleInit {
                         }
 
                         if ( arAndAudioData.ok && frData.ok ) {
+                            // TODO bug ici, car on peut avoir plusieurs verses ! on peut donc pas juste prendre le 0 ...
                             const {data:arAndAudio} = await arAndAudioData.json();
                             const {audio:arAudio, text:arText} = arAndAudio.ayahs.filter((ayah:any) => verses.includes(ayah.numberInSurah))[0];
                             const {data:fr} = await frData.json();
