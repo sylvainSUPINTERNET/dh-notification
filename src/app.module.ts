@@ -7,6 +7,7 @@ import { OpenAiClient } from './openai/client';
 import { ApiJob } from './cron/apiJob';
 import { MongooseModule } from '@nestjs/mongoose';
 import { FcmTokens, FcmTokensSchema } from './schemas/fcmTokens.schema';
+import { FirebaseClient } from './firebase/firebaseClient';
 
 @Module({
   imports: [
@@ -16,6 +17,6 @@ import { FcmTokens, FcmTokensSchema } from './schemas/fcmTokens.schema';
     MongooseModule.forFeature([{ name: FcmTokens.name, schema: FcmTokensSchema }])
   ],
   controllers: [AppController],
-  providers: [AppService, OpenAiClient, ApiJob],
+  providers: [AppService, OpenAiClient, ApiJob, FirebaseClient],
 })
 export class AppModule {}

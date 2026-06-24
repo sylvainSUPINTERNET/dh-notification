@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { CronJob } from 'cron';
+import { AppService } from "src/app.service";
 import { OpenAiClient } from "src/openai/client";
 import type { AboutQuranForAnswer } from "src/types/llm/AboutQuranForAnswer.type";
 
@@ -9,7 +10,7 @@ export class ApiJob implements OnModuleInit {
 
     private readonly themes:string[] = process.env.APP_THEME_LIST!.split(',').map(theme => theme.trim());
 
-    constructor(private readonly openAiClient: OpenAiClient) {}
+    constructor(private readonly openAiClient: OpenAiClient, private readonly appService:AppService) {}
 
     onModuleInit() {
 
@@ -89,9 +90,17 @@ export class ApiJob implements OnModuleInit {
                                 verses,
                                 contents
                             }
-
-                            this.logger.log(`Merged result : ${JSON.stringify(mergedResult)}`);
+                            mergedResult.contents = mergedResult.contents.sort(
+                                (a, b) => a.verseNumber - b.verseNumber,
+                            );
                             
+                            this.logger.log(`Merged result : ${JSON.stringify(mergedResult)}`);
+
+                            
+                            await this.appService.sendNotifications(
+                                mergedResult
+                            );
+                            this.logger.log(`Notifications sent successfully for theme : ${theme} - ${process.env.ENV!}`);
                         }
 
                     } catch ( error ) {
