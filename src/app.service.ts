@@ -5,12 +5,15 @@ import { Model } from 'mongoose';
 import type { FcmTokenPayload } from './types/fcmTokenPayload.type';
 import { getMessaging } from 'firebase-admin/messaging';
 import { AboutQuranForAnswer } from './types/llm/AboutQuranForAnswer.type';
+import { QuotesHistory } from './schemas/quotesHistory.schema';
 
 @Injectable()
 export class AppService {
   private readonly logger = new Logger(AppService.name);
 
-  constructor(@InjectModel(FcmTokens.name) private fcmTokenModel: Model<FcmTokens>) {}
+  constructor(
+    @InjectModel(FcmTokens.name) private fcmTokenModel: Model<FcmTokens>,
+    @InjectModel(QuotesHistory.name) private quotesHistory: Model<QuotesHistory>) {}
   
   capitalize(str):string {
     return str.charAt(0).toUpperCase() + str.slice(1);
@@ -132,6 +135,44 @@ export class AppService {
       throw new Error(`Error while fetching data from alquran API for surah ${surah} - status : ${arData.status}, ${frData.status}, ${enData.status}, ${audioData.status}`);
     }
   }
+  
 
+  async saveQuotesHistory(mergeResult: {
+    theme:string,
+    surah:number,
+    verses:number[],
+    contents: {
+      verseNumber: number;
+      text_ar: string;
+      text_fr: string;
+      text_en: string;
+      audio:string;
+    }[]  
+  }): Promise<QuotesHistory> {
+    const quotesHistoryRecord = await this.quotesHistory.create(mergeResult);
+    return quotesHistoryRecord;
+  }
+
+  async getQuotesHistoryByMonth(year: number | string, month: number | string): Promise<QuotesHistory[]> {
+    const parsedYear = Number(year);
+    const parsedMonth = Number(month);
+
+    if (!Number.isInteger(parsedYear) || !Number.isInteger(parsedMonth) || parsedMonth < 1 || parsedMonth > 12) {
+      throw new Error('Invalid year or month. Month must be between 1 and 12.');
+    }
+
+    const startDate = new Date(Date.UTC(parsedYear, parsedMonth - 1, 1));
+    const endDate = new Date(Date.UTC(parsedYear, parsedMonth, 1));
+
+    return this.quotesHistory
+      .find({
+        created_at: {
+          $gte: startDate,
+          $lt: endDate,
+        },
+      })
+      .sort({ created_at: 1 })
+      .exec();
+  }
 
 }

@@ -8,13 +8,14 @@ import { ApiJob } from './cron/apiJob';
 import { MongooseModule } from '@nestjs/mongoose';
 import { FcmTokens, FcmTokensSchema } from './schemas/fcmTokens.schema';
 import { FirebaseClient } from './firebase/firebaseClient';
+import { QuotesHistory, QuotesHistorySchema } from './schemas/quotesHistory.schema';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     ScheduleModule.forRoot(),
     MongooseModule.forRoot(`${process.env.MONGODB_URI!}`),
-    MongooseModule.forFeature([{ name: FcmTokens.name, schema: FcmTokensSchema }])
+    MongooseModule.forFeature([{ name: FcmTokens.name, schema: FcmTokensSchema }, { name: QuotesHistory.name, schema: QuotesHistorySchema }]),
   ],
   controllers: [AppController],
   providers: [AppService, OpenAiClient, ApiJob, FirebaseClient],

@@ -23,12 +23,6 @@ export class ApiJob implements OnModuleInit {
             cronTime = process.env.DEV_CRON_SCHEDULE_NOTIFICATION!;
         }
 
-        // TODO : save in DB the data ( to be view on the dashboard on phone )
-        // TODO : get list of FCM tokens 
-        // TODO : concurrency send X notifications with firebase SDK
-
-        // TODO : manage history ? to avoid same theme twice in a row ? or just randomize it and let it be random ?
-
         CronJob.from({
                 cronTime,
                 timeZone: process.env.CRON_TIMEZONE,
@@ -39,7 +33,6 @@ export class ApiJob implements OnModuleInit {
                     this.logger.log(`Selected theme : ${theme} - ${process.env.ENV!}`);
 
                     try {
-                        // step 1 get verces
                         const LLMResult: AboutQuranForAnswer = await this.openAiClient.askChatGPTAboutQuranFor(theme);
                         this.logger.log(`Result: ${JSON.stringify(LLMResult)}`);
 
@@ -49,6 +42,9 @@ export class ApiJob implements OnModuleInit {
                         await this.appService.sendPushNotifications(mergedData);
                         this.logger.log(`Notifications sent successfully for theme : ${theme} - ${process.env.ENV!}`);
 
+                        await this.appService.saveQuotesHistory(mergedData);
+                        this.logger.log(`Quotes history saved successfully for theme : ${theme} - ${process.env.ENV!}`);
+                        
                     } catch ( error ) {
                         this.logger.error(`Error while executing cron job : ${error}`);
                     }

@@ -1,7 +1,8 @@
-import { Body, Controller, Get, HttpStatus, Logger, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Logger, Param, Post, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { AppService } from './app.service';
 import type { FcmTokenPayload } from './types/fcmTokenPayload.type';
+import { QuotesHistory } from './schemas/quotesHistory.schema';
 
 @Controller()
 export class AppController {
@@ -30,4 +31,18 @@ export class AppController {
         return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: 'Failed to save FCM token' });
       }
   };
+
+  @Get("/quotes-history/:year/:month")
+  async getQuotesHistory(
+    @Res() res: Response,
+    @Param('year') year: number,
+    @Param('month') month: number): Promise<Response> {
+      try {
+        const quotesHistory = await this.appService.getQuotesHistoryByMonth(year, month);
+        return res.status(HttpStatus.OK).json(quotesHistory);
+      } catch (error) {
+        this.logger.error(`Error retrieving quotes history: ${error}`);
+        return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error: 'Failed to retrieve quotes history' });
+      }
+  }
 }
