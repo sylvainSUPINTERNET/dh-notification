@@ -12,7 +12,7 @@ export class AppController {
 
   @Get()
   health(@Res() res: Response): Response {
-    return res.status(200).json({ status: 'ok' });
+    return res.status(HttpStatus.OK).json({ status: 'ok' });
   }
 
   @Post("/fcm-token")
