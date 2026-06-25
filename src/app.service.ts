@@ -78,6 +78,7 @@ export class AppService {
       text_en: string;
       audio:string;
     }[]}> {
+  
     const { surah, verses, apis } = LLMResult;
 
     const arData = await fetch(apis.text_ar_url);

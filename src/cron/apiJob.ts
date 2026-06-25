@@ -46,7 +46,6 @@ export class ApiJob implements OnModuleInit {
                         const mergedData = await this.appService.mergeQuranDataApi(LLMResult);
                         this.logger.log(`Merged data: ${JSON.stringify(mergedData)}`);
                         
-
                         await this.appService.sendPushNotifications(mergedData);
                         this.logger.log(`Notifications sent successfully for theme : ${theme} - ${process.env.ENV!}`);
 
