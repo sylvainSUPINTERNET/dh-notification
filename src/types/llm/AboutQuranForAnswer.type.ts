@@ -3,8 +3,9 @@ export type AboutQuranForAnswer = {
         "surah": number,
         "verses": number[],
         "apis": {
-            "text_ar": string,
-            "text_fr": string,
-            "audio":string
+            "text_ar_url": string,
+            "text_fr_url": string,
+            "text_en_url": string,
+            "audio_url":string
         }
 }

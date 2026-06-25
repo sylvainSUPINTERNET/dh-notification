@@ -40,68 +40,15 @@ export class ApiJob implements OnModuleInit {
 
                     try {
                         // step 1 get verces
-                        const result: AboutQuranForAnswer = await this.openAiClient.askChatGPTAboutQuranFor(theme);
-                        this.logger.log(`Result: ${JSON.stringify(result)}`);
+                        const LLMResult: AboutQuranForAnswer = await this.openAiClient.askChatGPTAboutQuranFor(theme);
+                        this.logger.log(`Result: ${JSON.stringify(LLMResult)}`);
 
-                        // step 2 get data from alquran API with verces from step 1
-
-                        const { surah, verses } = result;
-
-                        //- text_fr contains translation only 
-                        //-  audio contains ar + audio mp3
-                        // - text_ar is useless
-                        const {text_fr, audio } = result.apis;
+                        const mergedData = await this.appService.mergeQuranDataApi(LLMResult);
+                        this.logger.log(`Merged data: ${JSON.stringify(mergedData)}`);
                         
-                        // ar + audio
-                        const arAndAudioData = await fetch(`https://api.alquran.cloud/v1/surah/${surah}/ar.alafasy`);
-                        if ( !arAndAudioData.ok ) {
-                            throw new Error(`Error while fetching ar + audio data from alquran API for surah ${surah} - status : ${arAndAudioData.status}`);
-                        }
 
-                        // fr
-                        const frData = await fetch(`https://api.alquran.cloud/v1/surah/${surah}/fr.hamidullah`);
-                        if ( !frData.ok ) {
-                            throw new Error(`Error while fetching fr data from alquran API for surah ${surah} - status : ${frData.status}`);
-                        }
-
-                        if ( arAndAudioData.ok && frData.ok ) {
-                            const {data:arAndAudio} = await arAndAudioData.json();
-                            const arAudioAndText: {audio: string, text: string, verseNumber: number}[] = arAndAudio.ayahs.filter((ayah:any) => verses.includes(ayah.numberInSurah)).map((ayah:any) => ({audio: ayah.audio, text: ayah.text, verseNumber: ayah.numberInSurah}));
-
-                            const {data:fr} = await frData.json();
-                            let frText: {text: string, verseNumber: number}[] = fr.ayahs.filter((ayah:any) => verses.includes(ayah.numberInSurah)).map((ayah:any) => ({text: ayah.text, verseNumber: ayah.numberInSurah}));
-                            
-                            let contents = arAudioAndText.map(arAudio => {
-                                const frTextForVerse = frText.find(fr => fr.verseNumber === arAudio.verseNumber);
-                                if ( frTextForVerse === undefined || frTextForVerse === null ) {
-                                    throw new Error(`Error while merging data from alquran API for surah ${surah} - verse ${arAudio.verseNumber} - fr text not found`);
-                                }
-                                return {
-                                    verseNumber: arAudio.verseNumber,
-                                    text_ar: arAudio.text,
-                                    text_fr: frTextForVerse.text,
-                                    audio: arAudio.audio
-                                }
-                            });
-
-                            const mergedResult = {
-                                theme, 
-                                surah,
-                                verses,
-                                contents
-                            }
-                            mergedResult.contents = mergedResult.contents.sort(
-                                (a, b) => a.verseNumber - b.verseNumber,
-                            );
-                            
-                            this.logger.log(`Merged result : ${JSON.stringify(mergedResult)}`);
-
-                            
-                            await this.appService.sendNotifications(
-                                mergedResult
-                            );
-                            this.logger.log(`Notifications sent successfully for theme : ${theme} - ${process.env.ENV!}`);
-                        }
+                        await this.appService.sendPushNotifications(mergedData);
+                        this.logger.log(`Notifications sent successfully for theme : ${theme} - ${process.env.ENV!}`);
 
                     } catch ( error ) {
                         this.logger.error(`Error while executing cron job : ${error}`);

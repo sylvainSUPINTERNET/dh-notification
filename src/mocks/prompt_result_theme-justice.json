@@ -2,11 +2,13 @@
     "theme": "la justice",
     "surah": 16,
     "verses": [
-        90
+        90,
+        91
     ],
     "apis": {
-        "text_ar": "https://api.alquran.cloud/v1/surah/16/quran-uthmani",
-        "text_fr": "https://api.alquran.cloud/v1/surah/16/fr.hamidullah",
-        "audio": "https://api.alquran.cloud/v1/surah/16/ar.alafasy"
+        "text_ar_url": "https://api.alquran.cloud/v1/surah/16/quran-uthmani",
+        "text_fr_url": "https://api.alquran.cloud/v1/surah/16/fr.hamidullah",
+        "text_en_url": "https://api.alquran.cloud/v1/surah/16/en.sahih",
+        "audio_url": "https://api.alquran.cloud/v1/surah/16/ar.alafasy"
     }
 }
