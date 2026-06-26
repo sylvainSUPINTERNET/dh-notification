@@ -39,8 +39,13 @@ export class ApiJob implements OnModuleInit {
                         const mergedData = await this.appService.mergeQuranDataApi(LLMResult);
                         this.logger.log(`Merged data: ${JSON.stringify(mergedData)}`);
                         
-                        await this.appService.sendPushNotifications(mergedData);
-                        this.logger.log(`Notifications sent successfully for theme : ${theme} - ${process.env.ENV!}`);
+                        if ( process.env.PUSH_NOTIFICATION_ENABLED !== "0" ) {
+                            await this.appService.sendPushNotifications(mergedData);
+                            this.logger.log(`Notifications sent successfully for theme : ${theme} - ${process.env.ENV!}`);
+                        } else {
+                            this.logger.log(`Push notifications are disabled. Skipping sending notifications for theme : ${theme} - ${process.env.ENV!}`);
+                        }
+
 
                         await this.appService.saveQuotesHistory(mergedData);
                         this.logger.log(`Quotes history saved successfully for theme : ${theme} - ${process.env.ENV!}`);
